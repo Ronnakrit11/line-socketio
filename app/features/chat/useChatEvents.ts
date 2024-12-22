@@ -3,7 +3,7 @@ import { ConversationWithMessages, MessageWithChat } from '@/app/types/chat';
 import useSocket from '@/lib/hooks/useSocket';
 import { useChatState } from './useChatState';
 import { SOCKET_EVENTS } from '@/lib/socket/events';
-import { SocketEventCallback } from '@/lib/socket/types/events';
+import { SocketEventData } from '@/lib/socket/types';
 
 export function useConversationEvents(initialConversations: ConversationWithMessages[]) {
   const { setConversations, updateConversation } = useChatState();
@@ -18,7 +18,7 @@ export function useConversationEvents(initialConversations: ConversationWithMess
 
   // Setup Socket.IO event handlers
   useEffect(() => {
-    const handleConversationUpdate: SocketEventCallback<typeof SOCKET_EVENTS.CONVERSATION_UPDATED> = (socketConversation) => {
+    const handleConversationUpdate = (socketConversation: SocketEventData[typeof SOCKET_EVENTS.CONVERSATION_UPDATED]) => {
       const updatedConversation: ConversationWithMessages = {
         ...socketConversation,
         messages: socketConversation.messages.map(msg => ({
@@ -39,7 +39,7 @@ export function useConversationEvents(initialConversations: ConversationWithMess
       updateConversation(updatedConversation);
     };
 
-    const handleConversationsUpdate: SocketEventCallback<typeof SOCKET_EVENTS.CONVERSATIONS_UPDATED> = (socketConversations) => {
+    const handleConversationsUpdate = (socketConversations: SocketEventData[typeof SOCKET_EVENTS.CONVERSATIONS_UPDATED]) => {
       const formattedConversations = socketConversations.map(conv => ({
         ...conv,
         messages: conv.messages.map(msg => ({
@@ -60,6 +60,7 @@ export function useConversationEvents(initialConversations: ConversationWithMess
       setConversations(formattedConversations);
     };
 
+    // Type-safe event subscriptions
     on(SOCKET_EVENTS.CONVERSATION_UPDATED, handleConversationUpdate);
     on(SOCKET_EVENTS.CONVERSATIONS_UPDATED, handleConversationsUpdate);
 
