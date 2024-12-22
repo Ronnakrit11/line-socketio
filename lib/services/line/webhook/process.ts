@@ -6,8 +6,9 @@ import { WebhookProcessingResult } from './types';
 import { processMessageEvent } from './events/message';
 import { processFollowEvent } from './events/follow';
 import { processUnfollowEvent } from './events/unfollow';
-import { broadcastAllConversations } from '@/lib/services/conversation/broadcast';
-import { pusherServer, PUSHER_EVENTS, PUSHER_CHANNELS } from '@/lib/pusher';
+import { EventEmitter } from '@/lib/socket/utils/eventEmitter';
+import { broadcastMetricsUpdate } from '@/lib/services/metrics/broadcast';
+import { getDashboardMetrics } from '@/app/dashboard/services/metrics';
 
 export async function processWebhookEvents(
   webhookBody: LineWebhookBody,
@@ -28,17 +29,18 @@ export async function processWebhookEvents(
       };
     });
 
-    // Broadcast updates to all clients
+    // Get updated metrics
+    const metrics = await getDashboardMetrics();
+
+    // Broadcast updates using Socket.IO
     await Promise.all([
-      // Broadcast conversation updates
-      broadcastAllConversations(),
+      // Broadcast metrics update
+      broadcastMetricsUpdate(metrics),
       
       // Notify clients of webhook processing completion
-      pusherServer.trigger(
-        PUSHER_CHANNELS.CHAT,
-        PUSHER_EVENTS.CONVERSATIONS_UPDATED,
-        { timestamp: new Date().toISOString() }
-      )
+      EventEmitter.emit('CONVERSATIONS_UPDATED', { 
+        timestamp: new Date().toISOString() 
+      })
     ]);
 
     return {
