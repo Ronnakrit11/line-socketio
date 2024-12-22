@@ -1,0 +1,171 @@
+// Database configuration
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Prisma Client generator
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ======= Authentication & User Models =======
+model UserProfile {
+  userId        String
+  platform      Platform
+  displayName   String
+  pictureUrl    String?
+  statusMessage String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@id([userId, platform])
+  @@index([platform, updatedAt])
+}
+
+// ======= LINE Integration Models =======
+model LineAccount {
+  id                 String         @id @default(cuid())
+  name               String
+  channelAccessToken String         @unique
+  channelSecret      String
+  active            Boolean        @default(true)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  
+  // Relationships
+  conversations     Conversation[]
+  quotations       Quotation[]
+  invoices         Invoice[]
+
+  @@index([active])
+}
+
+// ======= Chat & Messaging Models =======
+model Conversation {
+  id            String       @id @default(cuid())
+  platform      Platform
+  channelId     String      // Stores chat identifier (user/room/group)
+  userId        String      // User who initiated the conversation
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  // Relationships
+  messages      Message[]
+  lineAccount   LineAccount? @relation(fields: [lineAccountId], references: [id])
+  lineAccountId String?
+
+  @@unique([userId, platform, channelId, lineAccountId])
+  @@index([platform, updatedAt])
+  @@index([userId, platform])
+}
+// Update Message model to include base64 field for images
+model Message {
+  id             String       @id @default(cuid())
+  content        String       @db.Text
+  sender         SenderType
+  timestamp      DateTime     @default(now())
+  platform       Platform
+  externalId     String?      @unique
+  chatType       String?      // Type of chat: 'user', 'group', 'room'
+  chatId         String?      // Specific chat identifier
+  imageBase64    String?      @db.Text  // New field for storing base64 image data
+  
+  // Relationships
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversationId String
+
+  @@index([conversationId, timestamp])
+  @@index([platform, timestamp])
+  @@index([externalId])
+}
+
+// ======= Document Models =======
+model Quotation {
+  id            String          @id @default(cuid())
+  number        String          @unique
+  customerName  String
+  total         Float
+  status        DocumentStatus @default(DRAFT)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  // Relationships
+  items         QuotationItem[]
+  lineAccount   LineAccount    @relation(fields: [lineAccountId], references: [id])
+  lineAccountId String
+  invoice       Invoice?       @relation(fields: [invoiceId], references: [id])
+  invoiceId     String?
+
+  @@index([lineAccountId])
+  @@index([createdAt])
+  @@index([status])
+}
+
+model QuotationItem {
+  id          String    @id @default(cuid())
+  name        String
+  quantity    Int
+  price       Float
+  total       Float
+  
+  // Relationships
+  quotation   Quotation @relation(fields: [quotationId], references: [id])
+  quotationId String
+
+  @@index([quotationId])
+}
+
+model Invoice {
+  id            String          @id @default(cuid())
+  number        String          @unique
+  customerName  String
+  total         Float
+  status        DocumentStatus @default(DRAFT)
+  dueDate       DateTime
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  // Relationships
+  items         InvoiceItem[]
+  quotations    Quotation[]
+  lineAccount   LineAccount    @relation(fields: [lineAccountId], references: [id])
+  lineAccountId String
+
+  @@index([lineAccountId])
+  @@index([createdAt])
+  @@index([status])
+  @@index([dueDate])
+}
+
+model InvoiceItem {
+  id          String    @id @default(cuid())
+  name        String
+  quantity    Int
+  price       Float
+  total       Float
+  
+  // Relationships
+  invoice     Invoice   @relation(fields: [invoiceId], references: [id])
+  invoiceId   String
+
+  @@index([invoiceId])
+}
+
+// ======= Enums =======
+enum Platform {
+  LINE
+  FACEBOOK
+}
+
+enum SenderType {
+  USER
+  BOT
+}
+
+enum DocumentStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  CANCELLED
+}
