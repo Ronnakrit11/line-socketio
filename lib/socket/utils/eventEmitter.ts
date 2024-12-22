@@ -1,22 +1,36 @@
 import { getSocket } from '../client';
 import { SOCKET_EVENTS } from '../events';
+import { SocketEventData } from '../types';
 
 export class EventEmitter {
-  static emit(event: keyof typeof SOCKET_EVENTS, data: any): void {
+  static emit<K extends keyof SocketEventData>(
+    event: K, 
+    data: SocketEventData[K]
+  ): void {
     const socket = getSocket();
-    const eventName = SOCKET_EVENTS[event];
-    socket.emit(eventName, data);
+    if (socket) {
+      socket.emit(event, data);
+    }
   }
 
-  static emitToRoom(room: string, event: keyof typeof SOCKET_EVENTS, data: any): void {
+  static emitToRoom<K extends keyof SocketEventData>(
+    room: string,
+    event: K,
+    data: SocketEventData[K]
+  ): void {
     const socket = getSocket();
-    const eventName = SOCKET_EVENTS[event];
-    socket.emit('room:emit', { room, event: eventName, data });
+    if (socket) {
+      socket.emit('room:emit', { room, event, data });
+    }
   }
 
-  static broadcast(event: keyof typeof SOCKET_EVENTS, data: any): void {
+  static broadcast<K extends keyof SocketEventData>(
+    event: K,
+    data: SocketEventData[K]
+  ): void {
     const socket = getSocket();
-    const eventName = SOCKET_EVENTS[event];
-    socket.emit('broadcast', { event: eventName, data });
+    if (socket) {
+      socket.emit('broadcast', { event, data });
+    }
   }
 }

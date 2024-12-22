@@ -1,14 +1,17 @@
 import { 
   LineWebhookBody, 
-  LineAccount 
+  LineAccount,
+  LineMessageEvent,
+  WebhookProcessingResult 
 } from '@/app/types/line';
-import { WebhookProcessingResult } from './types';
 import { processMessageEvent } from './events/message';
 import { processFollowEvent } from './events/follow';
 import { processUnfollowEvent } from './events/unfollow';
 import { EventEmitter } from '@/lib/socket/utils/eventEmitter';
 import { broadcastMetricsUpdate } from '@/lib/services/metrics/broadcast';
 import { getDashboardMetrics } from '@/app/dashboard/services/metrics';
+import { SOCKET_EVENTS } from '@/lib/socket/events';
+import { SocketEventData } from '@/lib/socket/types';
 
 export async function processWebhookEvents(
   webhookBody: LineWebhookBody,
@@ -34,13 +37,11 @@ export async function processWebhookEvents(
 
     // Broadcast updates using Socket.IO
     await Promise.all([
-      // Broadcast metrics update
       broadcastMetricsUpdate(metrics),
-      
-      // Notify clients of webhook processing completion
-      EventEmitter.emit('CONVERSATIONS_UPDATED', { 
-        timestamp: new Date().toISOString() 
-      })
+      EventEmitter.emit<keyof SocketEventData>(
+        SOCKET_EVENTS.CONVERSATIONS_UPDATED,
+        []  // Send empty array as initial update
+      )
     ]);
 
     return {
@@ -54,7 +55,7 @@ export async function processWebhookEvents(
   }
 }
 
-async function processEvent(event: any, account: LineAccount) {
+async function processEvent(event: LineMessageEvent, account: LineAccount) {
   try {
     console.log('Processing LINE event:', { 
       type: event.type, 

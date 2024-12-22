@@ -29,3 +29,7 @@ export async function applyMiddleware(socket: Socket, next: (err?: Error) => voi
   }
 }
 
+export * from './types';
+export * from './auth';
+export * from './logging';
+export * from './error';

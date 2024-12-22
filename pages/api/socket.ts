@@ -1,17 +1,35 @@
-import { createServer } from 'http';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { initSocket } from '@/lib/socket';
+import { Server as SocketServer } from 'socket.io';
+import { Server as HTTPServer } from 'http';
+import { setupSocketHandlers } from '@/lib/socket/handlers';
+import { applyMiddleware } from '@/lib/socket/middleware';
 
-const httpServer = createServer();
-const io = initSocket(httpServer);
+let httpServer: HTTPServer;
+let socketServer: SocketServer;
 
 export default function SocketHandler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'GET') {
-    // Handle WebSocket upgrade
-    res.end();
-  } else {
-    res.status(405).json({ error: 'Method not allowed' });
+  if (!socketServer) {
+    httpServer = new HTTPServer();
+    socketServer = new SocketServer(httpServer, {
+      cors: {
+        origin: process.env.NODE_ENV === 'production'
+          ? process.env.NEXT_PUBLIC_APP_URL
+          : 'http://localhost:3000',
+        methods: ['GET', 'POST']
+      }
+    });
+
+    socketServer.use(applyMiddleware);
+
+    socketServer.on('connection', (socket) => {
+      console.log('Client connected:', socket.id);
+      setupSocketHandlers(socket);
+    });
+
+    httpServer.listen(3001);
   }
+
+  res.end();
 }
 
 export const config = {

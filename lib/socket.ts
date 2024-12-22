@@ -1,6 +1,6 @@
 import { Server as HTTPServer } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
-import { DefaultEventsMap } from 'socket.io/dist/typed-events';
+import { DefaultEventsMap } from 'socket.io';
 
 export type SocketServer = SocketIOServer<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap>;
 export type SocketClient = Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap>;

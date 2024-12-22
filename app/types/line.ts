@@ -1,5 +1,6 @@
 import { Platform } from '@prisma/client';
 
+// Webhook event types
 export interface LineMessageContent {
   type: string;
   text?: string;
@@ -32,6 +33,19 @@ export interface LineWebhookBody {
   events: LineMessageEvent[];
 }
 
+// Webhook processing types
+export interface WebhookEventResult {
+  success: boolean;
+  messageId?: string;
+  error?: string;
+}
+
+export interface WebhookProcessingResult {
+  processed: number;
+  total: number;
+  results: WebhookEventResult[];
+}
+
 // Account types
 export interface LineAccount {
   id: string;
@@ -41,11 +55,6 @@ export interface LineAccount {
   active: boolean;
 }
 
-export interface SignatureVerificationResult {
-  account: LineAccount;
-  isValid: boolean;
-}
-
 // Profile types
 export interface LineUserProfile {
   userId: string;
@@ -53,22 +62,4 @@ export interface LineUserProfile {
   pictureUrl?: string;
   statusMessage?: string;
   platform: Platform;
-}
-
-// API Response types
-export interface LineApiResponse {
-  messageId: string;
-}
-
-// Webhook types
-export interface LineWebhookEventResult {
-  success: boolean;
-  messageId?: string;
-  error?: string;
-}
-
-export interface LineWebhookProcessingResult {
-  processed: number;
-  total: number;
-  results: LineWebhookEventResult[];
 }

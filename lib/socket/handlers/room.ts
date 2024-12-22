@@ -1,4 +1,11 @@
 import { Socket } from 'socket.io';
+import { SocketEventData } from '../types';
+
+interface RoomEmitData<K extends keyof SocketEventData> {
+  room: string;
+  event: K;
+  data: SocketEventData[K];
+}
 
 export function setupRoomHandlers(socket: Socket) {
   socket.on('room:join', (room: string) => {
@@ -9,7 +16,7 @@ export function setupRoomHandlers(socket: Socket) {
     socket.leave(room);
   });
 
-  socket.on('room:emit', ({ room, event, data }: { room: string; event: string; data: any }) => {
+  socket.on('room:emit', <K extends keyof SocketEventData>({ room, event, data }: RoomEmitData<K>) => {
     socket.to(room).emit(event, data);
   });
 }

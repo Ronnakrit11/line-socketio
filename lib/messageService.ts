@@ -1,6 +1,6 @@
 import { PrismaClient, Message } from '@prisma/client';
 import { EventEmitter } from './socket/utils/eventEmitter';
-import { SOCKET_EVENTS } from './socket/events';
+
 import { formatConversationForSocket } from './services/conversation/formatter';
 
 const prisma = new PrismaClient();
