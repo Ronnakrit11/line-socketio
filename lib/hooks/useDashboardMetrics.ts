@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { DashboardMetrics } from '@/app/types/dashboard';
-import useSocket from './useSocket';
-import { SOCKET_EVENTS } from '../socket/events';
+import useSocket from '../socket/hooks/useSocket';
+import { QuotationEventData } from '@/lib/socket/types/quotation';
+
 
 export function useDashboardMetrics(initialMetrics: DashboardMetrics) {
   const [metrics, setMetrics] = useState<DashboardMetrics>(initialMetrics);
@@ -12,10 +13,16 @@ export function useDashboardMetrics(initialMetrics: DashboardMetrics) {
       setMetrics(updatedMetrics);
     };
 
+    // Handle quotation events with proper typing
+    const handleQuotationEvent = (data: QuotationEventData) => {
+      handleMetricsUpdate(data.metrics);
+    };
+
+    // Subscribe to events with proper types
     on(events.METRICS_UPDATED, handleMetricsUpdate);
-    on(events.QUOTATION_CREATED, (data: { metrics: DashboardMetrics }) => handleMetricsUpdate(data.metrics));
-    on(events.QUOTATION_UPDATED, (data: { metrics: DashboardMetrics }) => handleMetricsUpdate(data.metrics));
-    on(events.QUOTATION_DELETED, (data: { metrics: DashboardMetrics }) => handleMetricsUpdate(data.metrics));
+    on(events.QUOTATION_CREATED, handleQuotationEvent);
+    on(events.QUOTATION_UPDATED, handleQuotationEvent);
+    on(events.QUOTATION_DELETED, handleQuotationEvent);
 
     return () => {
       off(events.METRICS_UPDATED);

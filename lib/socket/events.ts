@@ -20,10 +20,10 @@ export const SOCKET_EVENTS = {
   QUOTATION_UPDATED: 'quotation:updated',
   QUOTATION_DELETED: 'quotation:deleted',
 
-  // Auth events
-  AUTH_SUCCESS: 'auth:success',
-  AUTH_ERROR: 'auth:error',
-  AUTH_LOGOUT: 'auth:logout'
+  // Room events
+  ROOM_JOIN: 'room:join',
+  ROOM_LEAVE: 'room:leave',
+  ROOM_EMIT: 'room:emit'
 } as const;
 
-export type SocketEvent = typeof SOCKET_EVENTS[keyof typeof SOCKET_EVENTS];
+export type SocketEvent = keyof typeof SOCKET_EVENTS;

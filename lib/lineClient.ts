@@ -1,12 +1,11 @@
 import { Client } from '@line/bot-sdk';
 import { PrismaClient } from '@prisma/client';
-import { pusherServer, PUSHER_EVENTS, PUSHER_CHANNELS } from './pusher';
-import { formatConversationForPusher } from './messageFormatter';
-import { LineMessageEvent } from '@/app/types/line';
+import { broadcastLineMessage, broadcastLineConversations } from './services/line/client/broadcast';
+
 
 const prisma = new PrismaClient();
 
-export async function handleLineWebhook(event: LineMessageEvent) {
+export async function handleLineWebhook(event: any) {
   if (event.type !== 'message' || event.message.type !== 'text') {
     console.log('Skipping non-text message event');
     return;
@@ -72,12 +71,10 @@ export async function handleLineWebhook(event: LineMessageEvent) {
     });
 
     if (updatedConversation) {
-      await pusherServer.trigger(
-        PUSHER_CHANNELS.CHAT,
-        PUSHER_EVENTS.CONVERSATION_UPDATED,
-        formatConversationForPusher(updatedConversation)
-      );
+      // Broadcast message update
+      await broadcastLineMessage(result.message, updatedConversation);
 
+      // Get and broadcast all conversations
       const allConversations = await prisma.conversation.findMany({
         include: {
           messages: {
@@ -89,11 +86,7 @@ export async function handleLineWebhook(event: LineMessageEvent) {
         }
       });
 
-      await pusherServer.trigger(
-        PUSHER_CHANNELS.CHAT,
-        PUSHER_EVENTS.CONVERSATIONS_UPDATED,
-        allConversations.map(formatConversationForPusher)
-      );
+      await broadcastLineConversations(allConversations);
     }
 
     return updatedConversation;
@@ -111,7 +104,7 @@ export async function sendLineMessage(userId: string, message: string): Promise<
 
   try {
     console.log('Sending LINE message:', { userId, message });
-
+    
     const client = new Client({
       channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
       channelSecret: process.env.LINE_CHANNEL_SECRET || ''

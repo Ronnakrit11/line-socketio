@@ -1,8 +1,8 @@
-```typescript
 import { useEffect } from 'react';
 import useSocket from '@/lib/hooks/useSocket';
 import { SOCKET_EVENTS } from '../events';
 import { Message } from '@prisma/client';
+import { RoomJoinEvent, RoomLeaveEvent } from '../types/room';
 
 interface UseConversationSocketProps {
   conversationId: string;
@@ -18,8 +18,12 @@ export function useConversationSocket({
   const { on, off, emit, events } = useSocket();
 
   useEffect(() => {
-    // Join conversation room
-    emit('room:join', `conversation:${conversationId}`);
+    // Create room events with proper typing
+    const joinEvent: RoomJoinEvent = { room: `conversation:${conversationId}` };
+    const leaveEvent: RoomLeaveEvent = { room: `conversation:${conversationId}` };
+
+    // Join conversation room with proper event type
+    emit(events.ROOM_JOIN, joinEvent);
 
     const handleMessage = (message: Message) => {
       if (message.conversationId === conversationId && onMessage) {
@@ -27,22 +31,25 @@ export function useConversationSocket({
       }
     };
 
-    const handleTyping = (data: { conversationId: string; isTyping: boolean }) => {
-      if (data.conversationId === conversationId && onTyping) {
-        onTyping(data.isTyping);
-      }
-    };
-
+    // Subscribe to events
     on(events.MESSAGE_RECEIVED, handleMessage);
-    on(events.TYPING_START, () => onTyping?.(true));
-    on(events.TYPING_END, () => onTyping?.(false));
+    
+    // Handle typing events
+    if (onTyping) {
+      on(events.TYPING_START, () => onTyping(true));
+      on(events.TYPING_END, () => onTyping(false));
+    }
 
     return () => {
-      emit('room:leave', `conversation:${conversationId}`);
+      // Leave room with proper event type
+      emit(events.ROOM_LEAVE, leaveEvent);
+      
+      // Cleanup event listeners
       off(events.MESSAGE_RECEIVED);
-      off(events.TYPING_START);
-      off(events.TYPING_END);
+      if (onTyping) {
+        off(events.TYPING_START);
+        off(events.TYPING_END);
+      }
     };
   }, [conversationId, onMessage, onTyping, on, off, emit, events]);
 }
-```

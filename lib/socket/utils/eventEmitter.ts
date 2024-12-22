@@ -1,10 +1,10 @@
 import { getSocket } from '../client';
-import { SOCKET_EVENTS } from '../events';
+
 import { SocketEventData } from '../types';
 
 export class EventEmitter {
   static emit<K extends keyof SocketEventData>(
-    event: K, 
+    event: K,
     data: SocketEventData[K]
   ): void {
     const socket = getSocket();

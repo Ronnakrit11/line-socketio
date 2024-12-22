@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Message } from '@prisma/client';
 import useSocket from '@/lib/hooks/useSocket';
 import { useMessageStore } from './useMessageStore';

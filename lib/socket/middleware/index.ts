@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io';
 import { middlewareConfig } from './config';
-import { SocketMiddleware } from './types';
+
 
 export async function applyMiddleware(socket: Socket, next: (err?: Error) => void) {
   try {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import useSocket from './useSocket';
-import { SOCKET_EVENTS } from '../socket/events';
+
 
 export function useTypingIndicator(conversationId: string) {
   const [isTyping, setIsTyping] = useState(false);

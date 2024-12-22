@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Message } from '@prisma/client';
 import useSocket from './useSocket';
-import { SOCKET_EVENTS } from '../socket/events';
+
 
 export function useMessageUpdates(
   conversationId: string,

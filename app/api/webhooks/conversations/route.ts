@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { EventEmitter } from '@/lib/socket/utils/eventEmitter';
 import { formatConversationForSocket } from '@/lib/services/conversation/formatter';
+import { SOCKET_EVENTS } from '@/lib/socket/events';
 
 const prisma = new PrismaClient();
 
@@ -27,8 +28,8 @@ export async function GET(request: NextRequest) {
     // Format conversations for Socket.IO
     const formattedConversations = conversations.map(formatConversationForSocket);
     
-    // Broadcast conversations update
-    EventEmitter.emit('CONVERSATIONS_UPDATED', formattedConversations);
+    // Broadcast conversations update using the proper event from SOCKET_EVENTS
+    EventEmitter.emit(SOCKET_EVENTS.CONVERSATIONS_UPDATED, formattedConversations);
     
     return NextResponse.json(formattedConversations);
   } catch (error) {

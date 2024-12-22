@@ -1,37 +1,15 @@
 import { Conversation, Message } from '@prisma/client';
+import { SocketConversation } from '@/lib/socket/types/conversation';
+import { SocketMessage } from '@/lib/socket/types/message';
 
-export interface FormattedMessage {
-  id: string;
-  conversationId: string;
-  content: string;
-  sender: string;
-  timestamp: string;
-  platform: string;
-  externalId: string | null;
-  chatType: string | null;
-  chatId: string | null;
-  imageBase64: string | null;
-}
-
-export interface FormattedConversation {
-  id: string;
-  platform: string;
-  channelId: string;
-  userId: string;
-  messages: FormattedMessage[];
-  createdAt: string;
-  updatedAt: string;
-  lineAccountId: string | null;
-}
-
-export function formatMessageForSocket(message: Message): FormattedMessage {
+export function formatMessageForSocket(message: Message): SocketMessage {
   return {
     id: message.id,
     conversationId: message.conversationId,
     content: message.content,
     sender: message.sender,
     timestamp: message.timestamp.toISOString(),
-    platform: message.platform,
+    platformType: message.platform, // Updated to use platformType
     externalId: message.externalId,
     chatType: message.chatType,
     chatId: message.chatId,
@@ -39,7 +17,9 @@ export function formatMessageForSocket(message: Message): FormattedMessage {
   };
 }
 
-export function formatConversationForSocket(conversation: Conversation & { messages: Message[] }): FormattedConversation {
+export function formatConversationForSocket(
+  conversation: Conversation & { messages: Message[] }
+): SocketConversation {
   return {
     id: conversation.id,
     platform: conversation.platform,
