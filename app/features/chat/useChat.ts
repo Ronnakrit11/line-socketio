@@ -1,12 +1,10 @@
-
-"use client";
-
 import { useCallback } from 'react';
 import { SerializedConversation, ConversationWithMessages } from '@/app/types/chat';
 import { useChatState } from './useChatState';
 import { useConversationEvents } from '@/app/hooks/useConversationEvents';
 import { APIResponse } from '@/app/types/api';
 import useSocket from '@/lib/hooks/useSocket';
+import { Message, Platform } from '@prisma/client';
 
 export function useChat(initialConversations: SerializedConversation[]) {
   const { 
@@ -55,11 +53,22 @@ export function useChat(initialConversations: SerializedConversation[]) {
 
         updateConversation(updatedConversation);
         
-        // Emit message sent event
-        emit(events.MESSAGE_SENT, {
+        // Create message object with proper typing
+        const message: Message = {
+          id: data.message?.id || '',
           conversationId: selectedConversation.id,
-          message: data.message
-        });
+          content,
+          sender: 'USER',
+          timestamp: new Date(),
+          platform: selectedConversation.platform as Platform,
+          externalId: data.message?.externalId || null,
+          chatType: data.message?.chatType || null,
+          chatId: data.message?.chatId || null,
+          imageBase64: data.message?.imageBase64 || null
+        };
+
+        // Emit socket event with properly typed message
+        emit(events.MESSAGE_SENT, message);
       }
     } catch (error) {
       console.error('Error sending message:', error);
