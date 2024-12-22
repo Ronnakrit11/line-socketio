@@ -1,4 +1,4 @@
-import { Message, Conversation } from '@prisma/client';
+import { Message } from '@prisma/client';
 import { EventEmitter } from '@/lib/socket/utils/eventEmitter';
 import { SOCKET_EVENTS } from '@/lib/socket/events';
 import { SocketMessage } from '@/lib/socket/types/message';
@@ -48,7 +48,7 @@ export async function broadcastMessageUpdate(conversationId: string) {
   }
 }
 
-export async function broadcastMessage(message: Message, conversation: Conversation & { messages: Message[] }) {
+export async function broadcastMessage(message: Message) {
   try {
     const formattedMessage = formatMessage(message);
     await EventEmitter.emit(SOCKET_EVENTS.MESSAGE_RECEIVED, formattedMessage);
