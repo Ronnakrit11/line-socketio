@@ -30,13 +30,13 @@ export async function DELETE(
     // Broadcast updates using Socket.IO with proper typing
     await Promise.all([
       EventEmitter.emit<keyof SocketEventData>(
-        SOCKET_EVENTS.METRICS_UPDATED, 
+        SOCKET_EVENTS.METRICS_UPDATED,
         metrics
       ),
       EventEmitter.emit<keyof SocketEventData>(
-        SOCKET_EVENTS.QUOTATION_DELETED, 
+        SOCKET_EVENTS.QUOTATION_DELETED,
         {
-          quotation: null, // Null since quotation was deleted
+          quotation: null,
           metrics
         }
       )
@@ -97,14 +97,14 @@ export async function PATCH(
     // Get updated metrics
     const metrics = await getDashboardMetrics();
 
-    // Broadcast updates using Socket.IO
+    // Broadcast updates using Socket.IO with proper typing
     await Promise.all([
       EventEmitter.emit<keyof SocketEventData>(
-        SOCKET_EVENTS.METRICS_UPDATED, 
+        SOCKET_EVENTS.METRICS_UPDATED,
         metrics
       ),
       EventEmitter.emit<keyof SocketEventData>(
-        SOCKET_EVENTS.QUOTATION_UPDATED, 
+        SOCKET_EVENTS.QUOTATION_UPDATED,
         {
           quotation,
           metrics
