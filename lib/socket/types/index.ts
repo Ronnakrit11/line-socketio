@@ -6,8 +6,8 @@ import { DashboardMetrics } from '@/app/types/dashboard';
 import { QuotationEventData } from './quotation';
 import { RoomJoinEvent, RoomLeaveEvent, RoomEmitEvent } from './room';
 
-// Define all possible socket event data types
-export interface SocketEventData {
+// Map event names to their data types
+export interface SocketEventMap {
   [SOCKET_EVENTS.MESSAGE_RECEIVED]: SocketMessage;
   [SOCKET_EVENTS.MESSAGE_SENT]: SocketMessage;
   [SOCKET_EVENTS.CONVERSATION_UPDATED]: SocketConversation;
@@ -24,13 +24,14 @@ export interface SocketEventData {
   [SOCKET_EVENTS.ROOM_EMIT]: RoomEmitEvent;
 }
 
+export type SocketEventName = keyof SocketEventMap;
 export type SocketEventCallback<T> = (data: T) => void;
 
 export interface SocketHook {
   socket: Socket | undefined;
-  emit: <K extends keyof SocketEventData>(event: K, data: SocketEventData[K]) => void;
-  on: <K extends keyof SocketEventData>(event: K, callback: SocketEventCallback<SocketEventData[K]>) => void;
-  off: <K extends keyof SocketEventData>(event: K) => void;
+  emit: <E extends SocketEventName>(event: E, data: SocketEventMap[E]) => void;
+  on: <E extends SocketEventName>(event: E, callback: SocketEventCallback<SocketEventMap[E]>) => void;
+  off: <E extends SocketEventName>(event: E) => void;
   events: typeof SOCKET_EVENTS;
 }
 

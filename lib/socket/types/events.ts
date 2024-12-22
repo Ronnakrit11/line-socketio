@@ -24,3 +24,4 @@ export interface SocketEventMap {
 }
 
 export type SocketEventName = keyof SocketEventMap;
+export type SocketEventCallback<E extends SocketEventName> = (data: SocketEventMap[E]) => void;
