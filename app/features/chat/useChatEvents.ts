@@ -4,8 +4,7 @@ import useSocket from '@/lib/hooks/useSocket';
 import { useChatState } from './useChatState';
 import { SOCKET_EVENTS } from '@/lib/socket/events';
 import { SocketMessage } from '@/lib/socket/types/message';
-import { SocketConversation } from '@/lib/socket/types/conversation';
-import { SocketEventCallback } from '@/lib/socket/types/events';
+import { SocketEventData } from '@/lib/socket/types';
 
 export function useConversationEvents(initialConversations: ConversationWithMessages[]) {
   const { setConversations, updateConversation } = useChatState();
@@ -20,7 +19,7 @@ export function useConversationEvents(initialConversations: ConversationWithMess
 
   // Setup Socket.IO event handlers
   useEffect(() => {
-    const handleConversationUpdate: SocketEventCallback<SocketConversation> = (socketConversation) => {
+    const handleConversationUpdate = (socketConversation: SocketEventData[typeof SOCKET_EVENTS.CONVERSATION_UPDATED]) => {
       const updatedConversation: ConversationWithMessages = {
         ...socketConversation,
         messages: socketConversation.messages.map((msg: SocketMessage) => ({
@@ -29,7 +28,7 @@ export function useConversationEvents(initialConversations: ConversationWithMess
           content: msg.content,
           sender: msg.sender,
           timestamp: new Date(msg.timestamp),
-          platform: msg.platform,
+          platform: msg.platformType, // Use platformType for platform field
           externalId: msg.externalId,
           chatType: msg.chatType,
           chatId: msg.chatId,
@@ -41,7 +40,7 @@ export function useConversationEvents(initialConversations: ConversationWithMess
       updateConversation(updatedConversation);
     };
 
-    const handleConversationsUpdate: SocketEventCallback<SocketConversation[]> = (socketConversations) => {
+    const handleConversationsUpdate = (socketConversations: SocketEventData[typeof SOCKET_EVENTS.CONVERSATIONS_UPDATED]) => {
       const formattedConversations = socketConversations.map(conv => ({
         ...conv,
         messages: conv.messages.map((msg: SocketMessage) => ({
@@ -50,7 +49,7 @@ export function useConversationEvents(initialConversations: ConversationWithMess
           content: msg.content,
           sender: msg.sender,
           timestamp: new Date(msg.timestamp),
-          platform: msg.platform,
+          platform: msg.platformType, // Use platformType for platform field
           externalId: msg.externalId,
           chatType: msg.chatType,
           chatId: msg.chatId,
