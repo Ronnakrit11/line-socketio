@@ -26,4 +26,4 @@ export const SOCKET_EVENTS = {
   AUTH_LOGOUT: 'auth:logout'
 } as const;
 
-export type SocketEvent = keyof typeof SOCKET_EVENTS;
+export type SocketEvent = typeof SOCKET_EVENTS[keyof typeof SOCKET_EVENTS];

@@ -1,24 +1,26 @@
-import { Message } from '@prisma/client';
-import { emitEvent } from '../../socket/client';
-import { SOCKET_EVENTS } from '../../socket/events';
-import { formatMessageForSocket } from './formatter';
+import { DashboardMetrics } from '@/app/types/dashboard';
+import { EventEmitter } from '@/lib/socket/utils/eventEmitter';
+import { SOCKET_EVENTS } from '@/lib/socket/events';
 
-export async function broadcastMessageUpdate(message: Message) {
+export async function broadcastMetricsUpdate(metrics: DashboardMetrics) {
   try {
-    const formattedMessage = formatMessageForSocket(message);
-
-    // Broadcast message to all clients
-    emitEvent(SOCKET_EVENTS.MESSAGE_RECEIVED, formattedMessage);
-    
-    // Broadcast conversation update
-    emitEvent(SOCKET_EVENTS.CONVERSATION_UPDATED, {
-      id: message.conversationId,
-      lastMessage: formattedMessage
-    });
-
+    EventEmitter.emit('METRICS_UPDATED', metrics);
     return true;
   } catch (error) {
-    console.error('Error broadcasting message:', error);
+    console.error('Error broadcasting metrics update:', error);
+    return false;
+  }
+}
+
+export async function broadcastQuotationMetrics(
+  metrics: DashboardMetrics,
+  event: keyof typeof SOCKET_EVENTS
+) {
+  try {
+    EventEmitter.emit(event, { metrics });
+    return true;
+  } catch (error) {
+    console.error('Error broadcasting quotation metrics:', error);
     return false;
   }
 }

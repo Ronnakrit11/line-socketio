@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { pusherServer, PUSHER_CHANNELS } from '@/lib/pusher';
 import { getDashboardMetrics } from '@/app/dashboard/services/metrics';
 import { createQuotation } from '@/lib/services/quotation/create';
 import { QuotationCreateParams } from '@/lib/services/quotation/types';
+import { broadcastMetricsUpdate } from '@/lib/services/metrics/broadcast';
 
 const prisma = new PrismaClient();
 
@@ -83,19 +83,7 @@ export async function POST(request: NextRequest) {
     const metrics = await getDashboardMetrics();
 
     // Broadcast metrics update
-    await Promise.all([
-      pusherServer.trigger(
-        PUSHER_CHANNELS.CHAT,
-        'metrics-updated',
-        metrics
-      ),
-      // Also trigger a specific quotation event
-      pusherServer.trigger(
-        PUSHER_CHANNELS.CHAT,
-        'quotation-created',
-        { quotation: quotation.quotation, metrics }
-      )
-    ]);
+    await broadcastMetricsUpdate(metrics);
 
     return NextResponse.json(quotation.quotation);
   } catch (error) {

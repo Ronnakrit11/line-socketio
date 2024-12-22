@@ -1,4 +1,4 @@
-```typescript
+
 import { Conversation } from '@prisma/client';
 import { getIO } from '../server';
 import { SOCKET_EVENTS } from '../events';
@@ -33,4 +33,3 @@ export class ConversationService {
     }
   }
 }
-```

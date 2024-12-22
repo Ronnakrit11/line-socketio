@@ -1,93 +1,69 @@
-import { PrismaClient } from '@prisma/client';
-import { pusherServer, PUSHER_EVENTS, PUSHER_CHANNELS } from './pusher';
-import {  formatMessageForPusher } from './messageFormatter';
+import { PrismaClient, Message } from '@prisma/client';
+import { EventEmitter } from './socket/utils/eventEmitter';
+import { SOCKET_EVENTS } from './socket/events';
+import { formatConversationForSocket } from './services/conversation/formatter';
 
 const prisma = new PrismaClient();
 
-export async function broadcastMessageUpdate(conversationId: string) {
+export async function createMessage(
+  conversationId: string,
+  content: string,
+  sender: 'USER' | 'BOT',
+  platform: 'LINE' | 'FACEBOOK',
+  externalId?: string,
+  timestamp?: Date
+): Promise<Message> {
+  return prisma.message.create({
+    data: {
+      conversationId,
+      content,
+      sender,
+      platform,
+      externalId,
+      timestamp: timestamp || new Date()
+    }
+  });
+}
+
+export async function broadcastConversationUpdate(conversationId: string) {
   try {
-    // Get conversation with limited messages
-    const updatedConversation = await prisma.conversation.findUnique({
+    // Get conversation with messages
+    const conversation = await prisma.conversation.findUnique({
       where: { id: conversationId },
       include: {
         messages: {
-          orderBy: { timestamp: 'asc' },
-          take: -50, // Only get last 50 messages
-        },
-      },
+          orderBy: { timestamp: 'asc' }
+        }
+      }
     });
 
-    if (!updatedConversation) {
-      console.error('Conversation not found:', conversationId);
-      return;
+    if (!conversation) {
+      throw new Error(`Conversation not found: ${conversationId}`);
     }
 
-    const latestMessage = updatedConversation.messages[updatedConversation.messages.length - 1];
-    
-    // Split broadcasts into smaller chunks
-    await Promise.all([
-      // Broadcast just the new message
-      pusherServer.trigger(
-        `private-conversation-${conversationId}`,
-        PUSHER_EVENTS.MESSAGE_RECEIVED,
-        formatMessageForPusher(latestMessage)
-      ),
+    // Format and broadcast conversation update
+    const formattedConversation = formatConversationForSocket(conversation);
+    EventEmitter.emit('CONVERSATION_UPDATED', formattedConversation);
 
-      // Broadcast minimal conversation update
-      pusherServer.trigger(
-        PUSHER_CHANNELS.CHAT,
-        PUSHER_EVENTS.CONVERSATION_UPDATED,
-        {
-          id: updatedConversation.id,
-          updatedAt: updatedConversation.updatedAt.toISOString(),
-          lastMessage: formatMessageForPusher(latestMessage)
-        }
-      )
-    ]);
-
-    // Update conversations list with minimal data
+    // Get and broadcast all conversations
     const allConversations = await prisma.conversation.findMany({
-      select: {
-        id: true,
-        platform: true,
-        userId: true,
-        updatedAt: true,
+      include: {
         messages: {
-          orderBy: { timestamp: 'desc' },
-          take: 1,
-          select: {
-            id: true,
-            content: true,
-            sender: true,
-            timestamp: true
-          }
+          orderBy: { timestamp: 'asc' }
         }
       },
       orderBy: {
         updatedAt: 'desc'
-      },
+      }
     });
 
-    const minimalConversations = allConversations.map(conv => ({
-      id: conv.id,
-      platform: conv.platform,
-      userId: conv.userId,
-      updatedAt: conv.updatedAt.toISOString(),
-      lastMessage: conv.messages[0] ? {
-        ...conv.messages[0],
-        timestamp: conv.messages[0].timestamp.toISOString()
-      } : null
-    }));
+    // Format and broadcast all conversations
+    const formattedConversations = allConversations.map(formatConversationForSocket);
+    EventEmitter.emit('CONVERSATIONS_UPDATED', formattedConversations);
 
-    await pusherServer.trigger(
-      PUSHER_CHANNELS.CHAT,
-      PUSHER_EVENTS.CONVERSATIONS_UPDATED,
-      minimalConversations
-    );
-
-    return updatedConversation;
+    console.log('Successfully broadcast updates for conversation:', conversationId);
   } catch (error) {
-    console.error('Error broadcasting message update:', error);
+    console.error('Error broadcasting conversation update:', error);
     throw error;
   }
 }

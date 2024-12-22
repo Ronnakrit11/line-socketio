@@ -1,6 +1,5 @@
 import { DashboardMetrics } from '@/app/types/dashboard';
 import { EventEmitter } from '@/lib/socket/utils/eventEmitter';
-import { SOCKET_EVENTS } from '@/lib/socket/events';
 
 export async function broadcastMetricsUpdate(metrics: DashboardMetrics) {
   try {
@@ -14,7 +13,7 @@ export async function broadcastMetricsUpdate(metrics: DashboardMetrics) {
 
 export async function broadcastQuotationMetrics(
   metrics: DashboardMetrics,
-  event: keyof typeof SOCKET_EVENTS
+  event: 'QUOTATION_CREATED' | 'QUOTATION_UPDATED' | 'QUOTATION_DELETED'
 ) {
   try {
     EventEmitter.emit(event, { metrics });
