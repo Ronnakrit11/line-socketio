@@ -5,6 +5,7 @@ import { DashboardMetrics } from '@/app/types/dashboard';
 
 // Base message type
 export interface SocketMessage {
+  [x: string]: string | null;
   id: string;
   conversationId: string;
   content: string;

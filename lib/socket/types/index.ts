@@ -4,7 +4,7 @@ import { SocketMessage } from './message';
 import { SocketConversation } from './conversation';
 import { DashboardMetrics } from '@/app/types/dashboard';
 import { QuotationEventData } from './quotation';
-import { RoomJoinEvent, RoomLeaveEvent, RoomEmitEvent } from './room';
+import { RoomEvent } from './room';
 
 // Socket event data mapping
 export interface SocketEventData {
@@ -19,9 +19,8 @@ export interface SocketEventData {
   [SOCKET_EVENTS.QUOTATION_CREATED]: QuotationEventData;
   [SOCKET_EVENTS.QUOTATION_UPDATED]: QuotationEventData;
   [SOCKET_EVENTS.QUOTATION_DELETED]: QuotationEventData;
-  [SOCKET_EVENTS.ROOM_JOIN]: RoomJoinEvent;
-  [SOCKET_EVENTS.ROOM_LEAVE]: RoomLeaveEvent;
-  [SOCKET_EVENTS.ROOM_EMIT]: RoomEmitEvent;
+  [SOCKET_EVENTS.ROOM_JOIN]: RoomEvent;
+  [SOCKET_EVENTS.ROOM_LEAVE]: RoomEvent;
 }
 
 export type SocketEventCallback<T> = (data: T) => void;
@@ -34,7 +33,8 @@ export interface SocketHook {
   events: typeof SOCKET_EVENTS;
 }
 
-export * from './message';
-export * from './conversation';
-export * from './quotation';
-export * from './room';
+// Re-export message types
+export type { SocketMessage } from './message';
+export type { SocketConversation } from './conversation';
+export type { QuotationEventData } from './quotation';
+export type { RoomEvent } from './room';

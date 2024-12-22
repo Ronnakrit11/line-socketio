@@ -3,7 +3,6 @@ import { ConversationWithMessages, MessageWithChat } from '@/app/types/chat';
 import useSocket from '@/lib/hooks/useSocket';
 import { useChatState } from './useChatState';
 import { SOCKET_EVENTS } from '@/lib/socket/events';
-import { SocketMessage } from '@/lib/socket/types/message';
 import { SocketEventData } from '@/lib/socket/types';
 
 export function useConversationEvents(initialConversations: ConversationWithMessages[]) {
@@ -22,13 +21,13 @@ export function useConversationEvents(initialConversations: ConversationWithMess
     const handleConversationUpdate = (socketConversation: SocketEventData[typeof SOCKET_EVENTS.CONVERSATION_UPDATED]) => {
       const updatedConversation: ConversationWithMessages = {
         ...socketConversation,
-        messages: socketConversation.messages.map((msg: SocketMessage) => ({
+        messages: socketConversation.messages.map((msg) => ({
           id: msg.id,
           conversationId: msg.conversationId,
           content: msg.content,
           sender: msg.sender,
           timestamp: new Date(msg.timestamp),
-          platform: msg.platformType, // Use platformType for platform field
+          platform: msg.platform,
           externalId: msg.externalId,
           chatType: msg.chatType,
           chatId: msg.chatId,
@@ -43,13 +42,13 @@ export function useConversationEvents(initialConversations: ConversationWithMess
     const handleConversationsUpdate = (socketConversations: SocketEventData[typeof SOCKET_EVENTS.CONVERSATIONS_UPDATED]) => {
       const formattedConversations = socketConversations.map(conv => ({
         ...conv,
-        messages: conv.messages.map((msg: SocketMessage) => ({
+        messages: conv.messages.map((msg) => ({
           id: msg.id,
           conversationId: msg.conversationId,
           content: msg.content,
           sender: msg.sender,
           timestamp: new Date(msg.timestamp),
-          platform: msg.platformType, // Use platformType for platform field
+          platform: msg.platform,
           externalId: msg.externalId,
           chatType: msg.chatType,
           chatId: msg.chatId,

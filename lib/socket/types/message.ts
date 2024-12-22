@@ -7,7 +7,6 @@ export interface SocketMessage {
   sender: SenderType;
   timestamp: string;
   platform: Platform;
-  platformType: Platform; // Add platformType for compatibility
   externalId: string | null;
   chatType: string | null;
   chatId: string | null;
