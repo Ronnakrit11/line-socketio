@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import useSocket from '@/lib/hooks/useSocket';
-import { SOCKET_EVENTS } from '../events';
+
 import { Message } from '@prisma/client';
 import { RoomJoinEvent, RoomLeaveEvent } from '../types/room';
 

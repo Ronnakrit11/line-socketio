@@ -1,6 +1,6 @@
-import { Platform } from '@prisma/client';
-import { findConversation } from './find';
-import { createConversation } from './create';
+import { Platform, PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export async function findOrCreateConversation(
   userId: string,
@@ -8,22 +8,41 @@ export async function findOrCreateConversation(
   channelId: string,
   lineAccountId?: string | null
 ) {
-  // First try to find existing conversation
-  const existingConversation = await findConversation({
-    userId,
-    platform,
-    lineAccountId
-  });
+  try {
+    // Try to find existing conversation
+    let conversation = await prisma.conversation.findFirst({
+      where: {
+        userId,
+        platform,
+        lineAccountId
+      },
+      include: {
+        messages: {
+          orderBy: { timestamp: 'asc' }
+        }
+      }
+    });
 
-  if (existingConversation) {
-    return existingConversation;
+    // Create new conversation if none exists
+    if (!conversation) {
+      conversation = await prisma.conversation.create({
+        data: {
+          userId,
+          platform,
+          channelId,
+          lineAccountId
+        },
+        include: {
+          messages: {
+            orderBy: { timestamp: 'asc' }
+          }
+        }
+      });
+    }
+
+    return conversation;
+  } catch (error) {
+    console.error('Error finding/creating conversation:', error);
+    throw error;
   }
-
-  // Create new conversation if none exists
-  return createConversation({
-    userId,
-    platform,
-    channelId,
-    lineAccountId
-  });
 }
