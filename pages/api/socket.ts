@@ -4,29 +4,35 @@ import { Server as HTTPServer } from 'http';
 import { setupSocketHandlers } from '@/lib/socket/handlers';
 import { applyMiddleware } from '@/lib/socket/middleware';
 
-let httpServer: HTTPServer;
-let socketServer: SocketServer;
+let io: SocketServer;
 
 export default function SocketHandler(req: NextApiRequest, res: NextApiResponse) {
-  if (!socketServer) {
-    httpServer = new HTTPServer();
-    socketServer = new SocketServer(httpServer, {
-      cors: {
-        origin: process.env.NODE_ENV === 'production'
-          ? process.env.NEXT_PUBLIC_APP_URL
-          : 'http://localhost:3000',
-        methods: ['GET', 'POST']
-      }
-    });
+  if (!io) {
+    // Create new Socket.IO server if it doesn't exist
+    if (!(res.socket as any).server.io) {
+      const httpServer = (res.socket as any).server as HTTPServer;
+      io = new SocketServer(httpServer, {
+        path: '/api/socket.io',
+        addTrailingSlash: false,
+        cors: {
+          origin: process.env.NODE_ENV === 'production'
+            ? process.env.NEXT_PUBLIC_APP_URL
+            : 'http://localhost:3000',
+          methods: ['GET', 'POST'],
+          credentials: true
+        },
+        transports: ['websocket', 'polling']
+      });
 
-    socketServer.use(applyMiddleware);
+      io.use(applyMiddleware);
 
-    socketServer.on('connection', (socket) => {
-      console.log('Client connected:', socket.id);
-      setupSocketHandlers(socket);
-    });
+      io.on('connection', (socket) => {
+        console.log('Client connected:', socket.id);
+        setupSocketHandlers(socket);
+      });
 
-    httpServer.listen(3001);
+      (res.socket as any).server.io = io;
+    }
   }
 
   res.end();
