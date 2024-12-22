@@ -1,35 +1,30 @@
 import { Socket } from 'socket.io';
-import { middlewareConfig } from './config';
+import { authMiddleware } from './auth';
+import { loggingMiddleware } from './logging';
+import { errorMiddleware } from './error';
 
+const middlewares = [
+  loggingMiddleware,
+  process.env.NODE_ENV === 'production' ? authMiddleware : null,
+  errorMiddleware
+].filter(Boolean) as ((socket: Socket, next: (err?: Error) => void) => void)[];
 
 export async function applyMiddleware(socket: Socket, next: (err?: Error) => void) {
   try {
-    // Get enabled middleware
-    const enabledMiddleware = middlewareConfig
-      .filter(config => config.enabled)
-      .map(config => config.middleware);
-
-    // Execute middleware chain
-    for (const middleware of enabledMiddleware) {
+    for (const middleware of middlewares) {
       await new Promise<void>((resolve, reject) => {
-        try {
-          middleware(socket, (err?: Error) => {
-            if (err) reject(err);
-            else resolve();
-          });
-        } catch (error) {
-          reject(error);
-        }
+        middleware(socket, (err?: Error) => {
+          if (err) reject(err);
+          else resolve();
+        });
       });
     }
-
     next();
   } catch (error) {
     next(error instanceof Error ? error : new Error('Middleware error'));
   }
 }
 
-export * from './types';
-export * from './auth';
-export * from './logging';
-export * from './error';
+export { authMiddleware } from './auth';
+export { loggingMiddleware } from './logging';
+export { errorMiddleware } from './error';

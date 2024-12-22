@@ -1,44 +1,40 @@
+import { Server as SocketServer } from 'socket.io';
 import { Server as HTTPServer } from 'http';
-import { Server as SocketIOServer } from 'socket.io';
+import { Socket } from 'socket.io';
 import { setupSocketHandlers } from './handlers';
 import { applyMiddleware } from './middleware';
+import { SOCKET_SERVER_CONFIG } from './config/server';
+import type { SocketServerInstance } from './types/server';
 
-let io: SocketIOServer;
+/**
+ * Initialize Socket.IO server
+ */
+export function initSocketServer(httpServer: HTTPServer): SocketServerInstance {
+  const io = new SocketServer(httpServer, SOCKET_SERVER_CONFIG);
 
-export function initSocketServer(httpServer: HTTPServer): SocketIOServer {
-  if (!io) {
-    io = new SocketIOServer(httpServer, {
-      cors: {
-        origin: process.env.NODE_ENV === 'production' 
-          ? process.env.NEXT_PUBLIC_APP_URL 
-          : 'http://localhost:3000',
-        methods: ['GET', 'POST'],
-        credentials: true
-      },
-      pingTimeout: 60000,
-      pingInterval: 25000
+  // Apply middleware
+  io.use(applyMiddleware);
+
+  // Setup connection handler
+  io.on('connection', (socket: Socket) => {
+    console.log('Client connected:', socket.id);
+    setupSocketHandlers(socket);
+
+    socket.on('disconnect', () => {
+      console.log('Client disconnected:', socket.id);
     });
+  });
 
-    // Apply middleware
-    io.use(applyMiddleware);
-
-    // Setup connection handler
-    io.on('connection', (socket) => {
-      console.log('Client connected:', socket.id);
-      setupSocketHandlers(socket);
-
-      socket.on('disconnect', () => {
-        console.log('Client disconnected:', socket.id);
-      });
-    });
-  }
-
-  return io;
+  return { io, httpServer };
 }
 
-export function getIO(): SocketIOServer {
-  if (!io) {
-    throw new Error('Socket.IO server not initialized');
-  }
-  return io;
+// Start standalone socket server if running directly
+if (require.main === module) {
+  const httpServer = new HTTPServer();
+  const server = initSocketServer(httpServer);
+  
+  const port = process.env.SOCKET_PORT || 3001;
+  server.httpServer.listen(port, () => {
+    console.log(`Socket.IO server running on port ${port}`);
+  });
 }

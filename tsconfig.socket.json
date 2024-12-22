@@ -1,0 +1,12 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+      "module": "CommonJS",
+      "outDir": "dist",
+      "target": "ES2017",
+      "isolatedModules": false,
+      "noEmit": false
+    },
+    "include": ["lib/socket/**/*"],
+    "exclude": ["node_modules"]
+  }

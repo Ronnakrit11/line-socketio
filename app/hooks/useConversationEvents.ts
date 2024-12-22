@@ -2,13 +2,14 @@ import { useEffect } from 'react';
 import { SerializedConversation, ConversationWithMessages } from '../types/chat';
 import useSocket from '@/lib/hooks/useSocket';
 import { useChatState } from '../features/chat/useChatState';
-import { SocketConversation, SocketMessage } from '@/lib/socket/types';
+import { SocketConversation } from '@/lib/socket/types/conversation';
 import { mapSocketMessageToMessage } from './message/messageMapper';
 
 export function useConversationEvents(initialConversations: SerializedConversation[]) {
   const { setConversations, updateConversation } = useChatState();
   const { on, off, events } = useSocket();
 
+  // Initialize conversations
   useEffect(() => {
     if (Array.isArray(initialConversations)) {
       const formattedConversations = initialConversations.map(conv => ({
@@ -25,6 +26,7 @@ export function useConversationEvents(initialConversations: SerializedConversati
     }
   }, [initialConversations, setConversations]);
 
+  // Handle real-time updates
   useEffect(() => {
     const handleConversationUpdate = (socketConversation: SocketConversation) => {
       const updatedConversation: ConversationWithMessages = {
@@ -32,7 +34,7 @@ export function useConversationEvents(initialConversations: SerializedConversati
         platform: socketConversation.platform,
         channelId: socketConversation.channelId,
         userId: socketConversation.userId,
-        messages: socketConversation.messages.map((msg: SocketMessage) => mapSocketMessageToMessage(msg)),
+        messages: socketConversation.messages.map(mapSocketMessageToMessage),
         createdAt: new Date(socketConversation.createdAt),
         updatedAt: new Date(socketConversation.updatedAt),
         lineAccountId: socketConversation.lineAccountId
@@ -46,7 +48,7 @@ export function useConversationEvents(initialConversations: SerializedConversati
         platform: conv.platform,
         channelId: conv.channelId,
         userId: conv.userId,
-        messages: conv.messages.map((msg: SocketMessage) => mapSocketMessageToMessage(msg)),
+        messages: conv.messages.map(mapSocketMessageToMessage),
         createdAt: new Date(conv.createdAt),
         updatedAt: new Date(conv.updatedAt),
         lineAccountId: conv.lineAccountId

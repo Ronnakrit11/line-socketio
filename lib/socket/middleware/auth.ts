@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io';
-import { verifyToken } from '@/lib/auth/token';
+import { verifyToken } from '../../auth/token';
 
 export async function authMiddleware(socket: Socket, next: (err?: Error) => void) {
   try {
@@ -8,11 +8,13 @@ export async function authMiddleware(socket: Socket, next: (err?: Error) => void
       return next(new Error('Authentication required'));
     }
 
-    const { isValid } = await verifyToken(token);
-    if (!isValid) {
+    const { isValid, payload } = await verifyToken(token);
+    if (!isValid || !payload) {
       return next(new Error('Invalid token'));
     }
 
+    // Attach user data to socket
+    socket.data.user = payload;
     next();
   } catch (error) {
     next(error instanceof Error ? error : new Error('Authentication failed'));
