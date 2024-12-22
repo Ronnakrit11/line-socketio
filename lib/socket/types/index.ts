@@ -6,6 +6,7 @@ import { DashboardMetrics } from '@/app/types/dashboard';
 import { QuotationEventData } from './quotation';
 import { RoomJoinEvent, RoomLeaveEvent, RoomEmitEvent } from './room';
 
+// Define all possible socket event data types
 export interface SocketEventData {
   [SOCKET_EVENTS.MESSAGE_RECEIVED]: SocketMessage;
   [SOCKET_EVENTS.MESSAGE_SENT]: SocketMessage;
