@@ -1,5 +1,5 @@
 import { getSocket } from '../client';
-import { SOCKET_EVENTS } from '../events';
+
 import { SocketEventMap, SocketEventName } from '../types/events';
 
 export class EventEmitter {
