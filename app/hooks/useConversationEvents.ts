@@ -3,6 +3,7 @@ import { SerializedConversation, ConversationWithMessages } from '../types/chat'
 import useSocket from '@/lib/hooks/useSocket';
 import { useChatState } from '../features/chat/useChatState';
 import { SocketConversation } from '@/lib/socket/types/conversation';
+import { SocketEventCallback } from '@/lib/socket/types';
 
 export function useConversationEvents(initialConversations: SerializedConversation[]) {
   const { setConversations, updateConversation } = useChatState();
@@ -27,7 +28,7 @@ export function useConversationEvents(initialConversations: SerializedConversati
 
   // Handle real-time updates
   useEffect(() => {
-    const handleConversationUpdate = (socketConversation: SocketConversation) => {
+    const handleConversationUpdate: SocketEventCallback<SocketConversation> = (socketConversation) => {
       const updatedConversation: ConversationWithMessages = {
         id: socketConversation.id,
         platform: socketConversation.platform,
@@ -35,7 +36,12 @@ export function useConversationEvents(initialConversations: SerializedConversati
         userId: socketConversation.userId,
         messages: socketConversation.messages.map(msg => ({
           ...msg,
-          timestamp: new Date(msg.timestamp)
+          timestamp: new Date(msg.timestamp),
+          platform: socketConversation.platform,
+          externalId: msg.externalId || null,
+          chatType: msg.chatType || null,
+          chatId: msg.chatId || null,
+          imageBase64: msg.imageBase64 || null
         })),
         createdAt: new Date(socketConversation.createdAt),
         updatedAt: new Date(socketConversation.updatedAt),
@@ -50,5 +56,5 @@ export function useConversationEvents(initialConversations: SerializedConversati
     return () => {
       off(events.CONVERSATION_UPDATED);
     };
-  }, [updateConversation, setConversations, on, off, events]);
+  }, [updateConversation, on, off, events]);
 }
