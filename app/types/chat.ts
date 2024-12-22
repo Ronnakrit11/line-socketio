@@ -23,7 +23,7 @@ export interface SerializedMessage {
   externalId: string | null;
   chatType: string | null;
   chatId: string | null;
-  imageBase64: string | null; // Add imageBase64 field
+  imageBase64: string | null;
 }
 
 export interface SerializedConversation {
@@ -36,21 +36,3 @@ export interface SerializedConversation {
   updatedAt: string;
   lineAccountId?: string | null;
 }
-
-// Helper function to convert serialized to full types
-export function deserializeConversation(conv: SerializedConversation): ConversationWithMessages {
-  return {
-    ...conv,
-    messages: conv.messages.map(msg => ({
-      ...msg,
-      timestamp: new Date(msg.timestamp)
-    })),
-    createdAt: new Date(conv.createdAt),
-    updatedAt: new Date(conv.updatedAt),
-    lineAccountId: conv.lineAccountId || null
-  };
-}
-
-// Type aliases for Pusher events
-export type PusherMessage = SerializedMessage;
-export type PusherConversation = SerializedConversation;

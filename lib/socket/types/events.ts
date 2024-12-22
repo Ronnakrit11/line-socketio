@@ -23,8 +23,4 @@ export interface SocketEventMap {
   [SOCKET_EVENTS.ROOM_EMIT]: RoomEmitEvent;
 }
 
-// Type helper for event names
 export type SocketEventName = keyof SocketEventMap;
-
-// Type helper for event data
-export type SocketEventData<E extends SocketEventName> = SocketEventMap[E];
