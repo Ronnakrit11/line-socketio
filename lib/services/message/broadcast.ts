@@ -1,4 +1,4 @@
-import { Message, Conversation, Platform } from '@prisma/client';
+import { Message, Conversation } from '@prisma/client';
 import { EventEmitter } from '@/lib/socket/utils/eventEmitter';
 import { SOCKET_EVENTS } from '@/lib/socket/events';
 import { SocketMessage } from '@/lib/socket/types/message';
