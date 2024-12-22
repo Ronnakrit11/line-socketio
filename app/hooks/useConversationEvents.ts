@@ -4,7 +4,6 @@ import useSocket from '@/lib/hooks/useSocket';
 import { useChatState } from '../features/chat/useChatState';
 import { SocketConversation } from '@/lib/socket/types/conversation';
 
-
 export function useConversationEvents(initialConversations: SerializedConversation[]) {
   const { setConversations, updateConversation } = useChatState();
   const { on, off, events } = useSocket();
@@ -45,30 +44,11 @@ export function useConversationEvents(initialConversations: SerializedConversati
       updateConversation(updatedConversation);
     };
 
-    const handleConversationsUpdate = (socketConversations: SocketConversation[]) => {
-      const formattedConversations = socketConversations.map(conv => ({
-        id: conv.id,
-        platform: conv.platform,
-        channelId: conv.channelId,
-        userId: conv.userId,
-        messages: conv.messages.map(msg => ({
-          ...msg,
-          timestamp: new Date(msg.timestamp)
-        })),
-        createdAt: new Date(conv.createdAt),
-        updatedAt: new Date(conv.updatedAt),
-        lineAccountId: conv.lineAccountId
-      })) as ConversationWithMessages[];
-
-      setConversations(formattedConversations);
-    };
-
+    // Subscribe to conversation update events
     on(events.CONVERSATION_UPDATED, handleConversationUpdate);
-    on(events.CONVERSATIONS_UPDATED, handleConversationUpdate);
 
     return () => {
       off(events.CONVERSATION_UPDATED);
-      off(events.CONVERSATIONS_UPDATED);
     };
   }, [updateConversation, setConversations, on, off, events]);
 }
