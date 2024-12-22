@@ -1,11 +1,12 @@
+import { SOCKET_EVENTS } from '../events';
 import { SocketMessage } from './message';
 import { SocketConversation } from './conversation';
 import { DashboardMetrics } from '@/app/types/dashboard';
 import { QuotationEventData } from './quotation';
 import { RoomJoinEvent, RoomLeaveEvent, RoomEmitEvent } from './room';
-import { SOCKET_EVENTS } from '../events';
 
-export interface SocketEventData {
+// Define the mapping between event names and their data types
+export interface SocketEventMap {
   [SOCKET_EVENTS.MESSAGE_RECEIVED]: SocketMessage;
   [SOCKET_EVENTS.MESSAGE_SENT]: SocketMessage;
   [SOCKET_EVENTS.CONVERSATION_UPDATED]: SocketConversation;
@@ -21,3 +22,9 @@ export interface SocketEventData {
   [SOCKET_EVENTS.ROOM_LEAVE]: RoomLeaveEvent;
   [SOCKET_EVENTS.ROOM_EMIT]: RoomEmitEvent;
 }
+
+// Type helper for event names
+export type SocketEventName = keyof SocketEventMap;
+
+// Type helper for event data
+export type SocketEventData<E extends SocketEventName> = SocketEventMap[E];

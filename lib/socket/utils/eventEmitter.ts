@@ -1,11 +1,11 @@
 import { getSocket } from '../client';
-
-import { SocketEventData } from '../types';
+import { SOCKET_EVENTS } from '../events';
+import { SocketEventMap, SocketEventName } from '../types/events';
 
 export class EventEmitter {
-  static emit<K extends keyof SocketEventData>(
-    event: K,
-    data: SocketEventData[K]
+  static emit<E extends SocketEventName>(
+    event: E,
+    data: SocketEventMap[E]
   ): void {
     const socket = getSocket();
     if (socket) {
@@ -13,10 +13,10 @@ export class EventEmitter {
     }
   }
 
-  static emitToRoom<K extends keyof SocketEventData>(
+  static emitToRoom<E extends SocketEventName>(
     room: string,
-    event: K,
-    data: SocketEventData[K]
+    event: E,
+    data: SocketEventMap[E]
   ): void {
     const socket = getSocket();
     if (socket) {
@@ -24,9 +24,9 @@ export class EventEmitter {
     }
   }
 
-  static broadcast<K extends keyof SocketEventData>(
-    event: K,
-    data: SocketEventData[K]
+  static broadcast<E extends SocketEventName>(
+    event: E,
+    data: SocketEventMap[E]
   ): void {
     const socket = getSocket();
     if (socket) {
