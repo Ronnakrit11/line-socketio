@@ -9,7 +9,8 @@ export function formatMessageForSocket(message: Message): SocketMessage {
     content: message.content,
     sender: message.sender,
     timestamp: message.timestamp.toISOString(),
-    platformType: message.platform, // Updated to use platformType
+    platform: message.platform, // Keep original platform field
+    platformType: message.platform, // Add platformType for compatibility
     externalId: message.externalId,
     chatType: message.chatType,
     chatId: message.chatId,
