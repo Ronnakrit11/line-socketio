@@ -44,12 +44,12 @@ export function useConversationUpdates() {
     };
 
     on(events.MESSAGE_RECEIVED, handleNewMessage);
-    on(events.CONVERSATION_UPDATED, handleConversationUpdate);
+  
     on(events.CONVERSATIONS_UPDATED, handleConversationsUpdate);
 
     return () => {
       off(events.MESSAGE_RECEIVED);
-      off(events.CONVERSATION_UPDATED);
+      
       off(events.CONVERSATIONS_UPDATED);
     };
   }, [addMessage, updateConversation, refreshConversations, on, off, events]);
