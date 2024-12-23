@@ -3,7 +3,8 @@ import { SerializedConversation, ConversationWithMessages } from '../types/chat'
 import useSocket from '@/lib/hooks/useSocket';
 import { useChatState } from '../features/chat/useChatState';
 import { SocketConversation } from '@/lib/socket/types/conversation';
-import { SocketMessage } from '@/lib/socket/types/message';
+import { SocketEventCallback } from '@/lib/socket/types';
+import { mapSocketToMessage } from '@/lib/socket/utils/messageMapper';
 
 export function useConversationEvents(initialConversations: SerializedConversation[]) {
   const { setConversations, updateConversation } = useChatState();
@@ -28,30 +29,19 @@ export function useConversationEvents(initialConversations: SerializedConversati
 
   // Handle real-time updates
   useEffect(() => {
-    function handleConversationUpdate(socketConversation: SocketConversation) {
+    const handleConversationUpdate: SocketEventCallback<SocketConversation> = (socketConversation) => {
       const updatedConversation: ConversationWithMessages = {
         id: socketConversation.id,
         platform: socketConversation.platform,
         channelId: socketConversation.channelId,
         userId: socketConversation.userId,
-        messages: socketConversation.messages.map((msg: SocketMessage) => ({
-          id: msg.id,
-          conversationId: msg.conversationId,
-          content: msg.content,
-          sender: msg.sender,
-          timestamp: new Date(msg.timestamp),
-          platform: msg.platform,
-          externalId: msg.externalId,
-          chatType: msg.chatType,
-          chatId: msg.chatId,
-          imageBase64: msg.imageBase64
-        })),
+        messages: socketConversation.messages.map(mapSocketToMessage),
         createdAt: new Date(socketConversation.createdAt),
         updatedAt: new Date(socketConversation.updatedAt),
         lineAccountId: socketConversation.lineAccountId
       };
       updateConversation(updatedConversation);
-    }
+    };
 
     // Subscribe to conversation update events
     on(events.CONVERSATION_UPDATED, handleConversationUpdate);
