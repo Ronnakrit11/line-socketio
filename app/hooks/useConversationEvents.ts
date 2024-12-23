@@ -3,7 +3,7 @@ import { SerializedConversation, ConversationWithMessages } from '../types/chat'
 import useSocket from '@/lib/hooks/useSocket';
 import { useChatState } from '../features/chat/useChatState';
 import { SocketConversation } from '@/lib/socket/types/conversation';
-import { SocketEventCallback } from '@/lib/socket/types';
+import { SocketMessage } from '@/lib/socket/types/message';
 
 export function useConversationEvents(initialConversations: SerializedConversation[]) {
   const { setConversations, updateConversation } = useChatState();
@@ -28,30 +28,33 @@ export function useConversationEvents(initialConversations: SerializedConversati
 
   // Handle real-time updates
   useEffect(() => {
-    const handleConversationUpdate: SocketEventCallback<SocketConversation> = (socketConversation) => {
+    function handleConversationUpdate(socketConversation: SocketConversation) {
       const updatedConversation: ConversationWithMessages = {
         id: socketConversation.id,
         platform: socketConversation.platform,
         channelId: socketConversation.channelId,
         userId: socketConversation.userId,
-        messages: socketConversation.messages.map(msg => ({
-          ...msg,
+        messages: socketConversation.messages.map((msg: SocketMessage) => ({
+          id: msg.id,
+          conversationId: msg.conversationId,
+          content: msg.content,
+          sender: msg.sender,
           timestamp: new Date(msg.timestamp),
-          platform: socketConversation.platform,
-          externalId: msg.externalId || null,
-          chatType: msg.chatType || null,
-          chatId: msg.chatId || null,
-          imageBase64: msg.imageBase64 || null
+          platform: msg.platform,
+          externalId: msg.externalId,
+          chatType: msg.chatType,
+          chatId: msg.chatId,
+          imageBase64: msg.imageBase64
         })),
         createdAt: new Date(socketConversation.createdAt),
         updatedAt: new Date(socketConversation.updatedAt),
         lineAccountId: socketConversation.lineAccountId
       };
       updateConversation(updatedConversation);
-    };
+    }
 
     // Subscribe to conversation update events
-   // on(events.CONVERSATION_UPDATED, handleConversationUpdate);
+    on(events.CONVERSATION_UPDATED, handleConversationUpdate);
 
     return () => {
       off(events.CONVERSATION_UPDATED);

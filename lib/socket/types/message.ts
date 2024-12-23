@@ -11,4 +11,5 @@ export interface SocketMessage {
   chatType: string | null;
   chatId: string | null;
   imageBase64: string | null;
+  platformType?: Platform; // Optional for backwards compatibility
 }

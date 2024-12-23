@@ -8,6 +8,6 @@ export const SOCKET_SERVER_CONFIG: SocketServerConfig = {
     methods: ['GET', 'POST'],
     credentials: true
   },
-  path: '/api/socket.io',
+  path: 'page/api/socket.io',
   addTrailingSlash: false
 };

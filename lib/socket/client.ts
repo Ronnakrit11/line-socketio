@@ -1,5 +1,4 @@
 import { io, Socket } from 'socket.io-client';
-import { SOCKET_EVENTS } from './events';
 
 let socket: Socket | undefined;
 
@@ -25,10 +24,6 @@ export function initSocketClient(): Socket {
     socket.on('connect_error', (error) => {
       console.error('Socket connection error:', error);
     });
-
-    socket.on('disconnect', (reason) => {
-      console.log('Socket disconnected:', reason);
-    });
   }
   return socket;
 }
@@ -41,12 +36,5 @@ export function disconnectSocket(): void {
   if (socket?.connected) {
     socket.disconnect();
     socket = undefined;
-  }
-}
-
-export function emitEvent<T>(event: keyof typeof SOCKET_EVENTS, data: T): void {
-  const socket = getSocket();
-  if (socket.connected) {
-    socket.emit(event, data);
   }
 }
