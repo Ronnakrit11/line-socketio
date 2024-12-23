@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { emitEvent } from '../../socket/client';
+import { emitEvent } from '@/lib/socket';
 import { SOCKET_EVENTS } from '../../socket/events';
 
 const prisma = new PrismaClient();
