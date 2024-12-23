@@ -9,6 +9,7 @@ export function mapMessageToSocket(message: Message): SocketMessage {
     sender: message.sender,
     timestamp: message.timestamp.toISOString(),
     platform: message.platform,
+    platformType: message.platform, // Include both for compatibility
     externalId: message.externalId,
     chatType: message.chatType,
     chatId: message.chatId,
@@ -23,7 +24,7 @@ export function mapSocketToMessage(socketMessage: SocketMessage): Message {
     content: socketMessage.content,
     sender: socketMessage.sender,
     timestamp: new Date(socketMessage.timestamp),
-    platform: socketMessage.platform,
+    platform: socketMessage.platform || socketMessage.platformType!, // Use platform or platformType
     externalId: socketMessage.externalId,
     chatType: socketMessage.chatType,
     chatId: socketMessage.chatId,

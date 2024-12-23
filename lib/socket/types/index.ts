@@ -33,7 +33,6 @@ export interface SocketHook {
   events: typeof SOCKET_EVENTS;
 }
 
-// Re-export specific types
 export type { SocketMessage } from './message';
 export type { SocketConversation } from './conversation';
 export type { QuotationEventData } from './quotation';

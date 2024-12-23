@@ -2,8 +2,7 @@ import { useEffect } from 'react';
 import { SerializedConversation, ConversationWithMessages } from '../types/chat';
 import useSocket from '@/lib/hooks/useSocket';
 import { useChatState } from '../features/chat/useChatState';
-import { SocketConversation } from '@/lib/socket/types/conversation';
-import { SocketEventCallback } from '@/lib/socket/types';
+import { SocketEventData } from '@/lib/socket/types';
 import { mapSocketToMessage } from '@/lib/socket/utils/messageMapper';
 
 export function useConversationEvents(initialConversations: SerializedConversation[]) {
@@ -29,21 +28,24 @@ export function useConversationEvents(initialConversations: SerializedConversati
 
   // Handle real-time updates
   useEffect(() => {
-    const handleConversationUpdate: SocketEventCallback<SocketConversation> = (socketConversation) => {
-      const updatedConversation: ConversationWithMessages = {
-        id: socketConversation.id,
-        platform: socketConversation.platform,
-        channelId: socketConversation.channelId,
-        userId: socketConversation.userId,
-        messages: socketConversation.messages.map(mapSocketToMessage),
-        createdAt: new Date(socketConversation.createdAt),
-        updatedAt: new Date(socketConversation.updatedAt),
-        lineAccountId: socketConversation.lineAccountId
-      };
-      updateConversation(updatedConversation);
+    const handleConversationUpdate = (socketConversation: SocketEventData[typeof events.CONVERSATION_UPDATED]) => {
+      try {
+        const updatedConversation: ConversationWithMessages = {
+          id: socketConversation.id,
+          platform: socketConversation.platform,
+          channelId: socketConversation.channelId,
+          userId: socketConversation.userId,
+          messages: socketConversation.messages.map(msg => mapSocketToMessage(msg)),
+          createdAt: new Date(socketConversation.createdAt),
+          updatedAt: new Date(socketConversation.updatedAt),
+          lineAccountId: socketConversation.lineAccountId
+        };
+        updateConversation(updatedConversation);
+      } catch (error) {
+        console.error('Error mapping conversation update:', error);
+      }
     };
 
-    // Subscribe to conversation update events
     on(events.CONVERSATION_UPDATED, handleConversationUpdate);
 
     return () => {
