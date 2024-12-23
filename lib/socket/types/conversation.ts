@@ -10,4 +10,5 @@ export interface SocketConversation {
   createdAt: string;
   updatedAt: string;
   lineAccountId?: string | null;
+  lineAccount:string
 }
