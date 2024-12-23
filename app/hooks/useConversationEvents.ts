@@ -51,7 +51,7 @@ export function useConversationEvents(initialConversations: SerializedConversati
     };
 
     // Subscribe to conversation update events
-    on(events.CONVERSATION_UPDATED, handleConversationUpdate);
+   // on(events.CONVERSATION_UPDATED, handleConversationUpdate);
 
     return () => {
       off(events.CONVERSATION_UPDATED);
