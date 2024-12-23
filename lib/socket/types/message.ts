@@ -7,9 +7,9 @@ export interface SocketMessage {
   sender: SenderType;
   timestamp: string;
   platform: Platform;
+  platformType?: Platform; // Optional for backwards compatibility
   externalId: string | null;
   chatType: string | null;
   chatId: string | null;
   imageBase64: string | null;
-  platformType?: Platform; // Optional for backwards compatibility
 }
