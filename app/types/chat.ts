@@ -1,4 +1,5 @@
 import { Conversation as PrismaConversation, Message as PrismaMessage, Platform } from '@prisma/client';
+import { LineAccount } from './line';
 
 // Base types from Prisma with proper message fields
 export interface MessageWithChat extends PrismaMessage {
@@ -6,11 +7,12 @@ export interface MessageWithChat extends PrismaMessage {
   chatId: string | null;
 }
 
-// Conversation with messages including chat fields
-export type ConversationWithMessages = Omit<PrismaConversation, 'lineAccountId'> & {
+// Conversation with messages including chat fields and LINE account
+export interface ConversationWithMessages extends Omit<PrismaConversation, 'lineAccountId'> {
   messages: MessageWithChat[];
   lineAccountId?: string | null;
-};
+  lineAccount?: LineAccount | null;
+}
 
 // Serialized types for API/JSON
 export interface SerializedMessage {
@@ -35,4 +37,5 @@ export interface SerializedConversation {
   createdAt: string;
   updatedAt: string;
   lineAccountId?: string | null;
+  lineAccount?: LineAccount | null;
 }

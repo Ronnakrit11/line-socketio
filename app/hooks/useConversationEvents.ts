@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import { SerializedConversation, ConversationWithMessages } from '../types/chat';
 import useSocket from '@/lib/hooks/useSocket';
 import { useChatState } from '../features/chat/useChatState';
-import { SocketEventData } from '@/lib/socket/types';
-import { mapSocketToMessage } from '@/lib/socket/utils/messageMapper';
+import { SocketConversation } from '@/lib/socket/types/conversation';
+import { mapSocketToConversation } from '@/lib/socket/mappers/conversation';
 
 export function useConversationEvents(initialConversations: SerializedConversation[]) {
   const { setConversations, updateConversation } = useChatState();
@@ -28,21 +28,12 @@ export function useConversationEvents(initialConversations: SerializedConversati
 
   // Handle real-time updates
   useEffect(() => {
-    const handleConversationUpdate = (socketConversation: SocketEventData[typeof events.CONVERSATION_UPDATED]) => {
+    const handleConversationUpdate = (socketConversation: SocketConversation) => {
       try {
-        const updatedConversation: ConversationWithMessages = {
-          id: socketConversation.id,
-          platform: socketConversation.platform,
-          channelId: socketConversation.channelId,
-          userId: socketConversation.userId,
-          messages: socketConversation.messages.map(msg => mapSocketToMessage(msg)),
-          createdAt: new Date(socketConversation.createdAt),
-          updatedAt: new Date(socketConversation.updatedAt),
-          lineAccountId: socketConversation.lineAccountId
-        };
+        const updatedConversation = mapSocketToConversation(socketConversation);
         updateConversation(updatedConversation);
       } catch (error) {
-        console.error('Error mapping conversation update:', error);
+        console.error('Error handling conversation update:', error);
       }
     };
 
